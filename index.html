@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0f172a">
+  <title>Wireless Sales Leads</title>
+  <style>
+    :root{ --bg:#0f172a; --panel:#0b1224; --muted:#334155; --text:#e5e7eb; --accent:#22d3ee; --violet:#a78bfa; --danger:#ef4444; --ok:#10b981; --warn:#f59e0b; }
+    *{ box-sizing:border-box } html,body{ height:100% }
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background: linear-gradient(180deg, #0b1026, #0f172a 40%); color:var(--text) }
+    header{ position:sticky; top:0; z-index:20; backdrop-filter: blur(6px); background: rgba(17,24,39,.85); border-bottom:1px solid #1f2937 }
+    .wrap{ max-width:1080px; margin:0 auto; padding:14px 16px }
+    h1{ display:flex; gap:10px; align-items:center; margin:0; font-size:1.25rem }
+    .badge{ font-size:.75rem; border:1px solid #253553; padding:2px 8px; border-radius:999px; color:#cbd5e1 }
+    input,select,textarea,button{ width:100%; background:#0b1224; color:var(--text); border:1px solid #1c2a3f; border-radius:12px; padding:10px 12px; outline:none }
+    input::placeholder, textarea::placeholder{ color:#8aa1bf } textarea{ resize:vertical; min-height:72px }
+    button{ cursor:pointer; font-weight:600 } .primary{ background: linear-gradient(180deg, #1c2a46, #172036); border-color:#2a3a5a } .ghost{ background:transparent } .danger{ background:#1b0f13; border-color:#4e2230; color:#fecaca }
+    .row{ display:flex; gap:10px; flex-wrap:wrap } .grid{ display:grid; gap:10px; grid-template-columns:1fr } @media (min-width:980px){ .grid-2{ grid-template-columns: 1fr 1.2fr } }
+    .card{ background: linear-gradient(180deg, #0b1224, #0a1121); border:1px solid #1a2641; border-radius:16px; padding:14px }
+    label{ display:block; font-size:.85rem; color:#cbd5e1; margin-bottom:6px } .muted{ color:#93a5be; font-size:.9rem }
+    table{ width:100%; border-collapse:collapse } th,td{ padding:10px; border-bottom:1px dashed #1f2d4a; vertical-align:top } th{ text-align:left; font-size:.85rem; color:#a5b4fc } tr:hover{ background:#0b1328 }
+    .pill{ padding:4px 8px; border:1px solid #22324e; border-radius:999px; font-size:.75rem; display:inline-block } .won{ color:var(--ok) } .lost{ color:#fca5a5 } .due{ color:var(--warn) } .overdue{ color:var(--danger) }
+    .stat{ background:#0c1428; border:1px solid #1c2a3f; padding:8px 10px; border-radius:12px; min-width:105px }
+    .fab{ position:fixed; right:14px; bottom:14px; z-index:20; border-radius:999px; padding:12px 16px }
+    .footer{ text-align:center; padding:18px; color:#93a5be; font-size:.85rem } .kpi{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end }
+    .sr{ position:absolute; left:-999rem; width:1px; height:1px; overflow:hidden }
+    .toolbar-right{ margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+    .iconbtn{ border-radius:10px; padding:8px 10px }
+    .chip{ padding:4px 8px; border:1px solid #263853; border-radius:999px; font-size:.8rem }
+    .assistant{ position: fixed; bottom: 76px; right: 14px; width: min(420px, 92vw); max-height: 68vh; display:none; flex-direction:column; background:#0b1224; border:1px solid #1a2641; border-radius:16px; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
+    .assistant header{ position:sticky; top:0; background:transparent; border-bottom:1px dashed #1f2d4a }
+    .chat{ padding:12px; overflow:auto }
+    .bubble{ padding:10px 12px; border:1px solid #22324e; border-radius:12px; margin-bottom:8px; max-width: 92% }
+    .me{ margin-left:auto; background:#0d1a30 }
+    .bot{ background:#0c1428 }
+    .source{ font-size:.75rem; color:#8aa1bf }
+    .settings{ display:none; position:fixed; top:50%; left:50%; transform: translate(-50%,-50%); width:min(720px,95vw); max-height:80vh; overflow:auto; background:#0b1224; border:1px solid #1a2641; border-radius:16px; box-shadow: 0 20px 50px rgba(0,0,0,.55); padding:16px; }
+    .settings h3{ margin:0 0 8px }
+    .bar small{ color:#93a5be }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>📱 Wireless Sales Leads <span class="badge">v3</span></h1>
+    <div class="row" style="margin-top:8px">
+      <input id="q" type="search" placeholder="Search name, phone, email, carrier, notes…">
+      <select id="filterStatus"><option value="">All outcomes</option><option>Open</option><option>Won</option><option>Lost</option></select>
+      <select id="filterStage">
+        <option value="">All stages</option>
+        <option>New</option><option>Contacted</option><option>Qualified</option><option>Demo/Solution</option>
+        <option>Proposal</option><option>Negotiation</option><option>Follow-Up</option><option>Awaiting Port</option>
+      </select>
+      <select id="filterCarrier"><option value="">All carriers</option><option>AT&amp;T</option><option>Verizon</option><option>T-Mobile</option><option>Other</option></select>
+    </div>
+    <div class="row bar" style="margin-top:8px">
+      <select id="sortBy">
+        <option value="updated_at_desc">Sort: Recently updated</option>
+        <option value="follow_up_asc">Sort: Next follow-up</option>
+        <option value="name_asc">Sort: Name A→Z</option>
+        <option value="status_asc">Sort: Outcome</option>
+        <option value="stage_asc">Sort: Stage</option>
+      </select>
+      <label class="pill" style="display:flex; align-items:center; gap:8px"><input id="dueOnly" type="checkbox"> Show due/overdue only</label>
+      <div class="toolbar-right">
+        <button id="btnExport" class="iconbtn">Export</button>
+        <label class="iconbtn" for="fileImport" style="cursor:pointer">Import<input id="fileImport" type="file" accept=".json,.csv" class="sr"></label>
+        <button id="btnShareAll" class="iconbtn">Share backup</button>
+        <button id="installBtn" class="iconbtn" style="display:none">Install</button>
+        <button id="enableNotifs" class="iconbtn">Enable notifications</button>
+        <button id="btnSettings" class="iconbtn">Settings</button>
+        <button id="btnAssistant" class="iconbtn">Assistant</button>
+        <button id="btnClear" class="iconbtn danger">Clear All</button>
+      </div>
+      <small class="muted">Daily summary + Sales AI included</small>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:10px">
+  <section class="grid grid-2">
+    <div class="card">
+      <h2 style="margin:0 0 10px">New / Edit Lead</h2>
+      <form id="leadForm">
+        <input type="hidden" id="leadId">
+        <div class="row">
+          <div style="flex:1"><label for="name">Lead Name *</label><input id="name" required placeholder="Full name"></div>
+          <div style="flex:1"><label for="phone">Phone *</label><input id="phone" required placeholder="(555) 123-4567"></div>
+        </div>
+        <label for="email">Email</label><input id="email" type="email" placeholder="name@example.com">
+        <div class="row">
+          <div style="flex:1"><label for="contactDate">Contact Date</label><input id="contactDate" type="date"></div>
+          <div style="flex:1"><label for="followUp">Follow-Up Date</label><input id="followUp" type="date"></div>
+        </div>
+        <div class="row">
+          <div style="flex:1"><label for="followUpTime">Follow-Up Time</label><input id="followUpTime" type="time" placeholder="09:00"></div>
+          <div style="flex:1"><label for="carrier">Current Carrier</label>
+            <select id="carrier"><option>AT&amp;T</option><option>Verizon</option><option>T-Mobile</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div style="flex:1"><label for="stage">Stage</label>
+            <select id="stage">
+              <option>New</option><option>Contacted</option><option>Qualified</option><option>Demo/Solution</option>
+              <option>Proposal</option><option>Negotiation</option><option>Follow-Up</option><option>Awaiting Port</option>
+            </select>
+          </div>
+          <div style="flex:1"><label for="status">Outcome</label>
+            <select id="status"><option>Open</option><option>Won</option><option>Lost</option></select>
+          </div>
+        </div>
+        <label for="product">Interested Product/Plan</label><input id="product" placeholder="Unlimited plan, iPhone, tablet…">
+        <label for="notes">Notes</label><textarea id="notes" placeholder="Budget, objections, lines needed, trade-in, etc."></textarea>
+        <div class="row" style="margin-top:10px"><button type="submit" class="primary">Save Lead</button><button type="button" id="resetForm" class="ghost">Reset</button></div>
+        <p class="muted" style="margin:.5rem 0 0">Data is stored on this device. Export backups if you switch phones.</p>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <h2 style="margin:0">Leads</h2>
+        <div class="row kpi">
+          <div class="stat"><div class="muted">Total</div><b id="kpiTotal">0</b></div>
+          <div class="stat"><div class="muted">Open</div><b id="kpiOpen">0</b></div>
+          <div class="stat"><div class="muted">Due</div><b id="kpiDue">0</b></div>
+          <div class="stat"><div class="muted">Won</div><b id="kpiWon">0</b></div>
+        </div>
+      </div>
+      <table id="list"><thead>
+        <tr><th>Name</th><th>Contact</th><th>Product / Carrier</th><th>Follow-Up</th><th>Stage / Outcome</th><th>Actions</th></tr>
+      </thead><tbody></tbody></table>
+    </div>
+  </section>
+</main>
+
+<button class="fab primary" id="fabAdd">+ Quick add</button>
+<div class="footer">Tip: use Settings to set your daily summary time • Notifications require permission.</div>
+
+<div class="assistant" id="assistant">
+  <header class="row" style="padding:10px 12px; align-items:center; justify-content:space-between">
+    <div><b>Sales Assistant</b> <span class="chip" id="modeChip">Offline</span></div>
+    <div class="row"><button id="btnAssistantClose" class="iconbtn">Close</button></div>
+  </header>
+  <div class="chat" id="chat"></div>
+  <div style="padding:10px 12px">
+    <textarea id="chatInput" placeholder="Ask about this app, AT&T plans/devices, or sales tactics…"></textarea>
+    <div class="row" style="margin-top:6px">
+      <button id="chatSend" class="primary">Send</button>
+      <button id="chatClear" class="ghost">Clear</button>
+    </div>
+  </div>
+</div>
+
+<div class="settings" id="settings">
+  <h3>Settings</h3>
+  <div class="row">
+    <div style="flex:1"><label for="summaryTime">Daily summary time</label><input id="summaryTime" type="time" value="09:00"></div>
+    <div style="flex:1"><label for="summaryEnable">Enable daily summary</label><select id="summaryEnable"><option>On</option><option>Off</option></select></div>
+  </div>
+  <label class="chip" style="display:flex; align-items:center; gap:8px; margin-top:8px"><input id="includeOverdue" type="checkbox" checked> Include overdue in summary</label>
+  <h3 style="margin-top:14px">Assistant</h3>
+  <label for="apiKey">Optional OpenAI API key (stored on this device)</label>
+  <input id="apiKey" placeholder="sk-... (optional)">
+  <div class="muted" style="margin-top:6px">If provided, complex questions can be answered online. Your key is stored locally; using it in a public site can expose it—use with care.</div>
+  <div class="row" style="margin-top:10px"><button id="saveSettings" class="primary">Save</button><button id="closeSettings" class="ghost">Close</button></div>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const storeKey = 'wl_leads_v3';
+  const notifKey = 'wl_notifs_v3';
+  const settingsKey = 'wl_settings_v3';
+  const el = {
+    form: $('#leadForm'), id: $('#leadId'), name: $('#name'), phone: $('#phone'), email: $('#email'),
+    contactDate: $('#contactDate'), followUp: $('#followUp'), followUpTime: $('#followUpTime'),
+    product: $('#product'), carrier: $('#carrier'), stage: $('#stage'), status: $('#status'), notes: $('#notes'),
+    listBody: $('#list tbody'),
+    q: $('#q'), filterStatus: $('#filterStatus'), filterStage: $('#filterStage'), filterCarrier: $('#filterCarrier'), sortBy: $('#sortBy'),
+    dueOnly: $('#dueOnly'), btnExport: $('#btnExport'), fileImport: $('#fileImport'), btnClear: $('#btnClear'),
+    resetForm: $('#resetForm'), kpiTotal: $('#kpiTotal'), kpiOpen: $('#kpiOpen'), kpiDue: $('#kpiDue'), kpiWon: $('#kpiWon'),
+    fabAdd: $('#fabAdd'), btnShareAll: $('#btnShareAll'), installBtn: $('#installBtn'),
+    enableNotifs: $('#enableNotifs'), btnSettings: $('#btnSettings'),
+    settings: $('#settings'), summaryTime: $('#summaryTime'), summaryEnable: $('#summaryEnable'),
+    includeOverdue: $('#includeOverdue'), saveSettings: $('#saveSettings'), closeSettings: $('#closeSettings'),
+    btnAssistant: $('#btnAssistant'), assistant: $('#assistant'), btnAssistantClose: $('#btnAssistantClose'),
+    chat: $('#chat'), chatInput: $('#chatInput'), chatSend: $('#chatSend'), chatClear: $('#chatClear'), modeChip: $('#modeChip')
+  };
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; el.installBtn.style.display='inline-block'; });
+  el.installBtn.addEventListener('click', async () => { if(!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt = null; el.installBtn.style.display='none'; });
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const toWhen = (date, time) => { if(!date) return null; try{ const [h,m] = (time||'09:00').split(':').map(x=>parseInt(x,10)); const dt = new Date(date); dt.setHours(h||9, m||0, 0, 0); return dt; }catch(_){ return new Date(date + 'T09:00'); } };
+  const fmtDateTime = (date, time) => { const d = toWhen(date, time); return d ? d.toLocaleString() : ''; };
+  const isOverdue = (date, time) => { const w = toWhen(date, time); return w && w.getTime() < Date.now() - 60*1000; };
+  const isDueSoon = (date, time) => { const w = toWhen(date, time); if(!w) return false; const t=w.getTime(), now=Date.now(); return t >= now - 60*1000 && t <= now + 60*1000; };
+  const esc = s => (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(storeKey) || '[]'); }catch(_){ return []; } }
+  function save(list){ localStorage.setItem(storeKey, JSON.stringify(list)); }
+  function loadNotifs(){ try{ return JSON.parse(localStorage.getItem(notifKey) || '[]'); }catch(_){ return []; } }
+  function saveNotifs(ids){ localStorage.setItem(notifKey, JSON.stringify(ids)); }
+  function loadSettings(){ try{ return JSON.parse(localStorage.getItem(settingsKey) || '{}'); }catch(_){ return {}; } }
+  function saveSettings(s){ localStorage.setItem(settingsKey, JSON.stringify(s)); }
+
+  const defaultSettings = { summaryTime:'09:00', summaryEnable:'On', includeOverdue:true, apiKey:'' };
+  const settings = Object.assign({}, defaultSettings, loadSettings());
+  el.summaryTime.value = settings.summaryTime || defaultSettings.summaryTime;
+  el.summaryEnable.value = settings.summaryEnable || defaultSettings.summaryEnable;
+  el.includeOverdue.checked = settings.includeOverdue !== false;
+  $('#apiKey').value = settings.apiKey || '';
+
+  const kb = [
+    { title:'App: Quick Start', tags:'app,help,how to,lead,form,filters,import,export,backup', text:`Add a lead with Name + Phone. Optional: email, product, carrier, stage, outcome, notes. Use Follow-Up Date+Time for reminders. Outcome "Open" is included in due lists. Filters and sort help you focus. Import/Export JSON/CSV for backups.`},
+    { title:'Pipeline: Stages', tags:'stages,pipeline,kanban,process', text:`New → Contacted → Qualified → Demo/Solution → Proposal → Negotiation → Follow-Up → Awaiting Port.`},
+    { title:'AT&T (high level)', tags:'att,plans,devices,trade-in', text:`AT&T plan pricing/promos change often. Verify specifics in official systems. eSIM widely supported; installment promos tied to trade-in and eligible plans.`},
+    { title:'Objections', tags:'price,coverage,credit,fees', text:`Price: sell value (network, trade-in credits, multi-line). Coverage: confirm primary locations; enable Wi‑Fi Calling. Credit: pre-qualify; consider BYOD/prepaid if deposit high. Fees: be transparent.`},
+    { title:'Notifications & Summary', tags:'notifications,alerts,summary,due,overdue', text:`Enable notifications in header. App sends due/overdue alerts (Open leads) and a Daily Summary at your chosen time (Settings). iOS PWAs alert while open or in background.`}
+  ];
+  function searchKB(q){
+    const words = q.toLowerCase().split(/[^a-z0-9+]+/).filter(Boolean);
+    const scored = kb.map(item => {
+      const hay = (item.title + ' ' + item.tags + ' ' + item.text).toLowerCase();
+      const score = words.reduce((s,w)=> s + (hay.includes(w) ? 1 : 0), 0) + (item.title.toLowerCase().includes(words[0]||'')?1:0);
+      return { item, score };
+    }).filter(x => x.score>0).sort((a,b)=>b.score-a.score);
+    return scored.slice(0,3).map(x => x.item);
+  }
+
+  function badgeOutcome(s){ const cls = s==='Won'?'won': s==='Lost'?'lost':''; return `<span class="pill ${cls}">${esc(s||'Open')}</span>`; }
+  function fmtRowDate(date,time){ if(!date) return '<span class="muted">—</span>'; let cls='muted'; if(isOverdue(date,time)) cls='overdue'; else if(isDueSoon(date,time)) cls='due'; return `<span class="${cls}">${esc(fmtDateTime(date,time))}</span>`; }
+
+  function getListFilteredSorted(){
+    const q = el.q.value.trim().toLowerCase();
+    const st = el.filterStatus.value, stg = el.filterStage.value, car = el.filterCarrier.value, dueOnly = el.dueOnly?.checked;
+    const sort = el.sortBy.value;
+    let list = load();
+    list = list.filter(x => {
+      const hay = [x.name,x.phone,x.email,x.product,x.carrier,x.notes,x.stage,x.status].join(' ').toLowerCase();
+      const matchesQ = !q || hay.includes(q);
+      const matchesStatus = !st || x.status === st;
+      const matchesStage = !stg || x.stage === stg;
+      const matchesCarrier = !car || x.carrier === car;
+      const due = x.followUp && (isOverdue(x.followUp,x.followUpTime) || isDueSoon(x.followUp,x.followUpTime));
+      const matchesDue = !dueOnly || due;
+      return matchesQ && matchesStatus && matchesStage && matchesCarrier && matchesDue;
+    });
+    list.sort((a,b) => {
+      switch(sort){
+        case 'name_asc': return (a.name||'').localeCompare(b.name||'');
+        case 'status_asc': return (a.status||'').localeCompare(b.status||'');
+        case 'stage_asc': return (a.stage||'').localeCompare(b.stage||'');
+        case 'follow_up_asc':
+          const af = (a.followUp || '9999-12-31') + 'T' + (a.followUpTime || '23:59');
+          const bf = (b.followUp || '9999-12-31') + 'T' + (b.followUpTime || '23:59');
+          return af.localeCompare(bf);
+        default: return (b.updated_at||'').localeCompare(a.updated_at||'');
+      }
+    });
+    return list;
+  }
+  function render(){
+    const list = getListFilteredSorted();
+    el.listBody.innerHTML = '';
+    for(const x of list){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><b>${esc(x.name||'')}</b><div class="muted">${esc(x.notes||'')}</div></td>
+        <td>${esc(x.phone||'')}<div class="muted">${esc(x.email||'')}</div></td>
+        <td>${esc(x.product||'')}<div class="muted pill">${esc(x.carrier||'')}</div></td>
+        <td>${fmtRowDate(x.followUp, x.followUpTime)}</td>
+        <td><span class="pill">${esc(x.stage||'')}</span> ${badgeOutcome(x.status||'Open')}</td>
+        <td><div class="row"><button class="pill" data-act="edit" data-id="${x.id}">Edit</button><button class="pill" data-act="share" data-id="${x.id}">Share</button><button class="pill danger" data-act="del" data-id="${x.id}">Delete</button></div></td>`;
+      tr.addEventListener('click', (e)=>{ if(!(e.target instanceof HTMLElement)) return; const act=e.target.getAttribute('data-act'); if(act) return; loadToForm(x.id); });
+      tr.querySelector('[data-act="edit"]').addEventListener('click', ()=> loadToForm(x.id));
+      tr.querySelector('[data-act="share"]').addEventListener('click', ()=> shareLead(x));
+      tr.querySelector('[data-act="del"]').addEventListener('click', ()=> { if(confirm('Delete this lead?')) del(x.id); });
+      el.listBody.appendChild(tr);
+    }
+    const all = load();
+    $('#kpiTotal').textContent = all.length;
+    $('#kpiOpen').textContent = all.filter(x=>x.status==='Open').length;
+    $('#kpiDue').textContent = all.filter(x=>x.followUp && (isOverdue(x.followUp,x.followUpTime) || isDueSoon(x.followUp,x.followUpTime))).length;
+    $('#kpiWon').textContent = all.filter(x=>x.status==='Won').length;
+  }
+
+  function loadToForm(id){
+    const x = load().find(v => v.id === id); if(!x) return;
+    el.id.value = x.id; el.name.value = x.name||''; el.phone.value = x.phone||''; el.email.value = x.email||'';
+    $('#contactDate').value = x.contactDate||''; el.followUp.value = x.followUp||''; el.followUpTime.value = x.followUpTime||'';
+    el.product.value = x.product||''; el.carrier.value = x.carrier||'Other'; el.stage.value = x.stage||'New'; el.status.value = x.status||'Open'; el.notes.value = x.notes||'';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function upsert(data){ const list = load(); const idx = list.findIndex(v => v.id === data.id); data.updated_at = new Date().toISOString(); if(idx>=0) list[idx]=data; else list.unshift(data); localStorage.setItem(storeKey, JSON.stringify(list)); render(); }
+  function del(id){ localStorage.setItem(storeKey, JSON.stringify(load().filter(v => v.id !== id))); render(); }
+
+  // Form submit
+  $('#leadForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(!el.name.value.trim() || !el.phone.value.trim()){ alert('Name and phone are required.'); return; }
+    const data = { id: el.id.value || (Date.now()+Math.random()).toString(36), name: el.name.value.trim(), phone: el.phone.value.trim(), email: el.email.value.trim(), contactDate: el.contactDate.value || '', followUp: el.followUp.value || '', followUpTime: el.followUpTime.value || '', product: el.product.value.trim(), carrier: el.carrier.value, stage: el.stage.value, status: el.status.value, notes: el.notes.value.trim(), updated_at: '' };
+    upsert(data); $('#leadForm').reset(); el.id.value='';
+  });
+  $('#resetForm').addEventListener('click', ()=>{ $('#leadForm').reset(); el.id.value=''; });
+  $('#fabAdd').addEventListener('click', ()=>{ const blank = { id:(Date.now()+Math.random()).toString(36), name:'New lead', phone:'', email:'', contactDate: todayISO(), followUp:'', followUpTime:'', product:'', carrier:'Other', stage:'New', status:'Open', notes:'', updated_at:'' }; upsert(blank); loadToForm(blank.id); });
+  ['input','change'].forEach(ev => { $('#q').addEventListener(ev, render); $('#filterStatus').addEventListener(ev, render); $('#filterStage').addEventListener(ev, render); $('#filterCarrier').addEventListener(ev, render); $('#sortBy').addEventListener(ev, render); if($('#dueOnly')) $('#dueOnly').addEventListener(ev, render); });
+
+  // Export / Import / Share
+  $('#btnExport').addEventListener('click', ()=>{ const data = JSON.stringify(load(), null, 2); const blob = new Blob([data], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'wireless_leads_backup.json'; a.click(); setTimeout(()=> URL.revokeObjectURL(a.href), 500); });
+  $('#btnShareAll').addEventListener('click', async ()=>{ const text = JSON.stringify(load(), null, 2); if (navigator.canShare && navigator.canShare()) { try{ const file = new File([text], 'wireless_leads_backup.json', {type:'application/json'}); await navigator.share({ title: 'Wireless Leads Backup', text: 'Backup file attached.', files:[file] }); return; }catch(e){} } if (navigator.share) { try{ await navigator.share({ title:'Wireless Leads Backup', text }); return; } catch(e){} } await navigator.clipboard.writeText(text); alert('Backup copied to clipboard.'); });
+  $('#fileImport').addEventListener('change', (e)=>{ const file = e.target.files && e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = ()=>{ try{ let imported = []; if (file.name.toLowerCase().endsWith('.json')) imported = JSON.parse(reader.result); else if (file.name.toLowerCase().endsWith('.csv')) imported = csvToObjects(reader.result); if(!Array.isArray(imported)) throw new Error('Invalid file format'); const current = load(); const byId = new Map(current.map(x => [x.id, x])); for (const raw of imported){ const x = normalize(raw); if(!x.name || !x.phone) continue; if(!x.id) x.id = (Date.now()+Math.random()).toString(36); x.updated_at = new Date().toISOString(); byId.set(x.id, x); } localStorage.setItem(storeKey, JSON.stringify(Array.from(byId.values()))); render(); alert('Import complete.'); }catch(err){ alert('Import failed: ' + err.message); } finally { e.target.value=''; } }; reader.readAsText(file); });
+
+  // Delete all
+  $('#btnClear').addEventListener('click', ()=>{ if(confirm('This removes all leads on this device. Continue?')){ localStorage.removeItem(storeKey); localStorage.removeItem(notifKey); render(); } });
+
+  // Assistant
+  function addBubble(text, who='bot', source=''){ const div = document.createElement('div'); div.className='bubble ' + (who==='me'?'me':'bot'); div.innerHTML = '<div>'+text.replace(/\n/g,'<br>')+'</div>' + (source?`<div class="source">${source}</div>`:''); $('#chat').appendChild(div); $('#chat').scrollTop = $('#chat').scrollHeight; }
+  function searchNotes(q){ const words = q.toLowerCase().split(/[^a-z0-9+]+/).filter(Boolean); const scored = kb.map(item=>{ const hay=(item.title+' '+item.tags+' '+item.text).toLowerCase(); const score=words.reduce((s,w)=>s+(hay.includes(w)?1:0),0)+(item.title.toLowerCase().includes(words[0]||'')?1:0); return {item,score}; }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score); return scored.slice(0,3).map(x=>x.item); }
+  function appContext(){ const all=load(); const open=all.filter(x=>x.status==='Open'); const due=open.filter(x=>x.followUp && (isOverdue(x.followUp,x.followUpTime)||isDueSoon(x.followUp,x.followUpTime))); const won=all.filter(x=>x.status==='Won'); return `You have ${all.length} total leads, ${open.length} open, ${won.length} won, and ${due.length} due/overdue.`; }
+  async function assistantAnswer(q){ addBubble(esc(q),'me'); const hits = searchNotes(q); if(!hits.length){ addBubble("I couldn't find that in my offline notes. Try asking about: app usage, pipeline stages, AT&T basics, objections, or notifications.","bot","Offline KB"); } else { addBubble(esc(hits.map(h=>'### '+h.title+'\n'+h.text).join('\n\n')),'bot','Offline KB'); } }
+  $('#btnAssistant').addEventListener('click', ()=>{ $('#assistant').style.display='flex'; $('#modeChip').textContent='Offline'; if(!$('#chat').children.length){ addBubble('Hi! Ask me how to use the app, move a lead through stages, or high‑level AT&T plan/device questions. Prices/promos change often—use AT&T systems to confirm specifics.'); } });
+  $('#btnAssistantClose').addEventListener('click', ()=>{ $('#assistant').style.display='none'; });
+  $('#chatSend').addEventListener('click', ()=>{ const q=$('#chatInput').value.trim(); if(!q) return; $('#chatInput').value=''; assistantAnswer(q); });
+  $('#chatClear').addEventListener('click', ()=>{ $('#chat').innerHTML=''; });
+
+  // Notifications
+  async function ensurePermission(){ if (!('Notification' in window)) { alert('Notifications not supported on this device/browser.'); return false; } if (Notification.permission === 'granted') return true; if (Notification.permission === 'denied') { alert('Notifications are blocked. Enable in system settings.'); return false; } const res = await Notification.requestPermission(); return res === 'granted'; }
+  async function showNotification(title, body){ try{ const reg = (await navigator.serviceWorker.getRegistration()) || null; if (reg && reg.showNotification) { reg.showNotification(title, { body, icon: './icons/icon-192.png', badge: './icons/icon-192.png' }); } else if ('Notification' in window) { new Notification(title, { body }); } }catch(_){} }
+  document.getElementById('enableNotifs').addEventListener('click', async ()=>{ if (await ensurePermission()) { await showNotification('Notifications enabled', 'You will receive due and daily summary alerts.'); } });
+
+  // Due checks
+  setInterval(()=>{
+    const already = new Set(loadNotifs());
+    const list = load();
+    const toNotify = [];
+    for (const x of list){
+      if (!x.followUp || x.status!=='Open') continue;
+      const due = isDueSoon(x.followUp, x.followUpTime) || isOverdue(x.followUp, x.followUpTime);
+      if (due && !already.has(x.id)) toNotify.push(x);
+    }
+    if (toNotify.length){
+      const ids = loadNotifs();
+      toNotify.forEach(x => { const when = fmtDateTime(x.followUp, x.followUpTime); showNotification('Follow-up: ' + x.name, (x.product? x.product + ' • ' : '') + (when ? ('Due ' + when) : 'Due now')); ids.push(x.id); });
+      saveNotifs(ids);
+    }
+  }, 30000);
+
+  // Daily summary (every 30s check)
+  setInterval(()=>{
+    const s = Object.assign({}, { summaryTime:'09:00', summaryEnable:'On', includeOverdue:true }, JSON.parse(localStorage.getItem(settingsKey)||'{}'));
+    if (s.summaryEnable !== 'On') return;
+    const now = new Date();
+    const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    if (hhmm !== (s.summaryTime||'09:00')) return;
+    const stampKey = 'wl_summary_sent_' + now.toISOString().slice(0,10);
+    if (localStorage.getItem(stampKey)) return;
+    const all = load();
+    const today = now.toISOString().slice(0,10);
+    const dueToday = all.filter(x => x.status==='Open' && x.followUp === today);
+    const overdue = all.filter(x => x.status==='Open' && x.followUp && new Date(x.followUp + 'T' + (x.followUpTime||'09:00')).getTime() < now.getTime());
+    const next3 = all.filter(x=>x.status==='Open' && x.followUp).sort((a,b)=>{ const at=(a.followUp||'9999-12-31')+'T'+(a.followUpTime||'23:59'); const bt=(b.followUp||'9999-12-31')+'T'+(b.followUpTime||'23:59'); return at.localeCompare(bt); }).slice(0,3);
+    const lines = [`Today: ${dueToday.length} due` + (s.includeOverdue ? ` • ${overdue.length} overdue` : '')].concat(next3.length?['Next up:'] : []).concat(next3.map(x => `• ${x.name} — ${fmtDateTime(x.followUp, x.followUpTime)} (${x.stage})`));
+    showNotification('Daily Summary', lines.join('\n'));
+    localStorage.setItem(stampKey, '1');
+  }, 30000);
+
+  // Seed demo data
+  (function seed(){
+    const list = load(); if(list.length){ render(); return; }
+    const sample = [
+      {name:'Alex Johnson', phone:'(205) 555-1020', email:'alex@example.com', product:'Unlimited + iPhone', carrier:'Verizon', stage:'Qualified', status:'Open', contactDate: todayISO(), followUp: todayISO(), followUpTime:'09:00', notes:'3 lines • trade-in eligible'},
+      {name:'B. Rivera', phone:'(256) 555-3399', email:'brivera@example.com', product:'Tablet + hotspot', carrier:'AT&T', stage:'Contacted', status:'Open', contactDate: todayISO(), followUp:'', followUpTime:'', notes:'Budget conscious.'},
+      {name:'Chris Lee', phone:'(334) 555-7788', email:'', product:'BYOD (SIM-only)', carrier:'T-Mobile', stage:'Proposal', status:'Won', contactDate: todayISO(), followUp:'', followUpTime:'', notes:'Closed 2-line family plan.'},
+    ].map(x => Object.assign({ id: (Date.now()+Math.random()).toString(36), updated_at: new Date().toISOString() }, x));
+    localStorage.setItem(storeKey, JSON.stringify(sample));
+    render();
+  })();
+
+  render();
+})();
+</script>
+</body>
+</html>
