@@ -1,5 +1,5 @@
-// SW for GitHub Pages deploy (v3)
-const CACHE = 'wl-cache-v3-1755390160';
+// v4 SW (same as v3, new cache bust)
+const CACHE = 'wl-cache-v4-1755392212';
 const ASSETS = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE ? caches.delete(k) : null)))); self.clients.claim(); });
